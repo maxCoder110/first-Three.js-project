@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>3D Voxel Viewer</title>
+    <title>3D Test & Model Viewer</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a1a; }
         canvas { display: block; }
@@ -24,29 +24,32 @@
         import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // 1. SETUP
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x333333); // Lighter grey background
+        scene.background = new THREE.Color(0x333333); 
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(20, 20, 20); // Move camera back so we don't start "inside"
+        camera.position.set(15, 15, 15); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. BRIGHT LIGHTING
-        scene.add(new THREE.AmbientLight(0xffffff, 1.5)); // Stronger ambient light
+        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
         const sun = new THREE.DirectionalLight(0xffffff, 2);
         sun.position.set(10, 20, 10);
         scene.add(sun);
 
-        // 3. MOUSE CONTROLS
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
-        // 4. LOADING THE MODEL
-        const modelName = 'model'; // Matches model.obj and model.mtl
+        // --- 1. TEST CUBE (If you see this, the code is running!) ---
+        const testGeo = new THREE.BoxGeometry(2, 2, 2);
+        const testMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+        const testCube = new THREE.Mesh(testGeo, testMat);
+        scene.add(testCube);
+
+        // --- 2. YOUR VOXEL MODEL ---
+        const modelName = 'model'; // Ensure your files are named model.obj and model.mtl
 
         const mtlLoader = new MTLLoader();
         mtlLoader.load(`${modelName}.mtl`, (materials) => {
@@ -55,18 +58,22 @@
             objLoader.setMaterials(materials);
             objLoader.load(`${modelName}.obj`, (object) => {
                 
-                // --- AUTO-CENTERING LOGIC ---
+                // Centering the model
                 const box = new THREE.Box3().setFromObject(object);
                 const center = box.getCenter(new THREE.Vector3());
                 object.position.sub(center); 
-                // ----------------------------
-
+                
                 scene.add(object);
-                console.log("Success! Model added to scene.");
-            }, undefined, (err) => console.error("Check if model.obj exists!", err));
-        }, undefined, (err) => console.error("Check if model.mtl exists!", err));
+                // Hide the test cube if the model loads successfully
+                testCube.visible = false; 
+                console.log("Success: Voxel model loaded!");
+            }, undefined, (err) => {
+                console.error("Error: Could not find model.obj. Check GitHub files!", err);
+            });
+        }, undefined, (err) => {
+            console.error("Error: Could not find model.mtl. Check GitHub files!", err);
+        });
 
-        // 5. ANIMATION LOOP
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
