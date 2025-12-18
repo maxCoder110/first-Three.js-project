@@ -1,2 +1,57 @@
-# first-Three.js-project
-block
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My Voxel Model</title>
+    <style>body { margin: 0; background-color: #222; }</style>
+</head>
+<body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(10, 10, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        // ==========================================
+        // PUT YOUR FILE NAME HERE (No .obj at the end)
+        const modelName = 'model'; 
+        // ==========================================
+
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load(`${modelName}.mtl`, (materials) => {
+            materials.preload();
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load(`${modelName}.obj`, (object) => {
+                scene.add(object);
+            });
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
