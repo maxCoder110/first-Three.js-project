@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>3D Smooth Zoom Viewer</title>
+    <title>3D Voxel Viewer</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #1a1a1a; }
+        body { margin: 0; }
         canvas { display: block; }
     </style>
 </head>
@@ -20,54 +19,45 @@
 
     <script type="module">
         import * as THREE from 'three';
-        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-        import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+        // 1. Scene Setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222); 
-
+        scene.background = new THREE.Color(0xeeeeee);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(60, 60, 60); 
-
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-        const sun = new THREE.DirectionalLight(0xffffff, 1.5);
-        sun.position.set(20, 30, 40);
-        scene.add(sun);
+        // 2. Lights (Crucial for seeing 3D shapes)
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5).normalize();
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
 
-        // --- SMOOTH MOUSE CONTROLS ---
+        // 3. Orbit Controls (The "Mouse Look" part)
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;   // Essential for smooth feel
-        controls.dampingFactor = 0.05;   // The "friction" of the movement
-        controls.zoomSpeed = 0.4;        // Makes the scroll wheel slower
-        controls.rotateSpeed = 0.8;      // Makes turning the camera smoother
+        camera.position.set(0, 2, 5);
+        controls.update();
 
-        const modelName = 'model'; 
-
-        const mtlLoader = new MTLLoader();
-        mtlLoader.load(`${modelName}.mtl`, (materials) => {
-            materials.preload();
-            const objLoader = new OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.load(`${modelName}.obj`, (object) => {
-                const box = new THREE.Box3().setFromObject(object);
-                const center = box.getCenter(new THREE.Vector3());
-                object.position.sub(center); 
-                scene.add(object);
-            });
+        // 4. Load your MagicaVoxel Model
+        const loader = new GLTFLoader();
+        loader.load('model.gltf', function (gltf) {
+            scene.add(gltf.scene);
+        }, undefined, function (error) {
+            console.error(error);
         });
 
+        // 5. Animation Loop
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(); // Update is REQUIRED for damping to work
+            controls.update(); // Required for damping/smoothness
             renderer.render(scene, camera);
         }
         animate();
 
+        // Handle Window Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
