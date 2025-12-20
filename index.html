@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>FE!N - Super Wide Smoke</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; }
+        body { margin: 0; overflow: hidden; background-color: #765; }
         canvas { display: block; }
     </style>
 </head>
@@ -24,7 +24,7 @@
         import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // 1. SETUP
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 30, 100); 
@@ -33,7 +33,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. LIGHTING
+ 
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
         const strobeLight = new THREE.PointLight(0xffffff, 0, 300); 
         strobeLight.position.set(0, 40, 50);
@@ -42,7 +42,7 @@
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
-        // 3. SUPER WIDE SMOKE SYSTEM
+        
         const smokeParticles = [];
         const smokeGeometry = new THREE.SphereGeometry(1.5, 8, 8); 
         const smokeMaterial = new THREE.MeshBasicMaterial({ 
@@ -51,7 +51,7 @@
             opacity: 0.4 
         });
 
-        for (let i = 0; i < 80; i++) { // More particles for thickness
+        for (let i = 0; i < 80; i++) { 
             const particle = new THREE.Mesh(smokeGeometry, smokeMaterial.clone());
             particle.visible = false;
             scene.add(particle);
@@ -65,7 +65,7 @@
             p.material.opacity = 0.4;
         }
 
-        // 4. MODEL LOADING
+    
         let travisNormal = null, travisSmoke = null;
 
         function loadModel(name, callback) {
@@ -95,7 +95,7 @@
         loadModel('fien', (obj) => { travisNormal = obj; travisNormal.visible = true; });
         loadModel('fien_smoke', (obj) => { travisSmoke = obj; });
 
-        // 5. ANIMATION LOOP
+
         const clock = new THREE.Clock();
 
         function animate() {
@@ -110,15 +110,15 @@
                 travisNormal.rotation.y += 0.12;
                 travisSmoke.rotation.y += 0.01;
 
-                // Super Wide Smoke Logic
+     
                 smokeParticles.forEach((p) => {
                     if (isSmokingTime) {
                         p.visible = true;
-                        p.position.y += 0.18; // Slightly faster rise
-                        p.scale.x += 0.1;    // Rapid horizontal growth
+                        p.position.y += 0.18; 
+                        p.scale.x += 0.1;    
                         p.scale.z += 0.1;
                         p.scale.y += 0.05;
-                        p.material.opacity -= 0.002; // Fades very slowly to stay massive
+                        p.material.opacity -= 0.002; 
 
                         if (p.material.opacity <= 0) resetParticle(p);
                     } else {
